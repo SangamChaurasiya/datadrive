@@ -118,11 +118,39 @@ def upload_file(request):
                 file = File(id=uuid.uuid4(), folder_id=folder_id, owner_id=user_id, file=file, name=file_name)
                 file.save()
                 
-                return redirect(f'http://127.0.0.1:8000/folder/{folder_id}/')   
+                return redirect('/')   
 
         return redirect('/')
     else:
         return redirect('login')
+
+
+# def edit_file(request, file_id):
+#     if request.user.is_authenticated:
+#         if request.method == 'POST':
+#             # Retrieve the uploaded file
+#             file_name = request.POST.get('file_name', None)   # The file input name in the form
+#             folder_id = request.POST.get('folder_id')  # Additional hidden input
+#             file = request.FILES.get('file')
+#             user_id = request.user.id
+#             if file_name:
+#                 try:
+#                     file = File.objects.get(id=file_id)
+#                     file.name=file_name
+#                     file.file=file
+#                     file.folder=Folder.objects.get(id=folder_id)
+#                     file.owner=User.objects.get(pk=user_id)
+#                     file.save()
+#                     messages.success(request, 'File Updated Successfully!')
+#                 except Exception as e:
+#                     print(e)
+#                     messages.error(request, 'File does not exists!')
+#                 return redirect(f'http://127.0.0.1:8000/folder/{folder_id}/')   
+
+#         return redirect('/')
+#     else:
+#         return redirect('login')
+
 
 
 def shared_file(request):
@@ -173,5 +201,12 @@ def get_file_by_id(file_id):
 def delete_folder(request, folder_id):
     folder = get_object_or_404(Folder, id=folder_id, owner=request.user)
     folder.delete()
-    messages.success(request, 'Folder Deleted Successfully.')
+    messages.error(request, 'Folder Deleted Successfully.')
+    return redirect('index')
+
+
+def delete_file(request, file_id):
+    file = get_object_or_404(File, id=file_id, owner=request.user)
+    file.delete()
+    messages.error(request, 'File Deleted Successfully.')
     return redirect('index')
