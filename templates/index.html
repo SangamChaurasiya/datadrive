@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+    
+{% block body %}
+
+    {% if not is_file_shared %}
+    <div class="container mt-3 folder-creation">
+        
+        <button class="btn btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#foldercreate">Add Folder</button>
+        <button class="btn btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#fileupload">Upload File</button>
+        <br><br>
+        <p>{% if path %}Folder: {% endif %}<b>{{path}}<b></p>
+    </div>
+    {% endif %}
+    <hr>
+    {% if request.GET.error %}
+        <p style="color: red;">Error: {{ request.GET.error }}</p>
+    {% endif %}
+
+    {% if request.GET.link %}
+        <p>Your file link: <a href="{{ request.GET.link }}">{{ request.GET.link }}</a></p>
+    {% endif %}
+    {% if error %}
+        <p style="color: red;">Error: {{ error }}</p>
+    {% endif %}
+    <hr>
+    <div class="container mt-5 main-content">
+        {% for folder in folders %}
+             
+            <a type="button"  href="{% url 'folders' folder.id %}" class="btn btn-outline-success btn-lg mt-5" style="margin-left: 2rem;">{{ folder.name }}</a> | <a type="button"  href="{% url 'delete_folder' folder.id %}" class="btn btn-outline-danger btn-lg mt-2" style="margin-left: 2rem;">Delete</a>
+        {% endfor %}
+    </div>
+    <div class="container mt-5 main-file-content">
+        {% for file in files %}
+            <div class="card" style="width: 18rem; margin-left: 2rem;">
+                <div class="card-body">
+                    <h5 class="card-title">{{file.name}}</h5>
+                    <a href="{{ file.get_absolute_url }}" target="_blank" class="btn btn-outline-primary">Go File</a>
+                    {% if not is_file_shared %}
+                        <button type="button" class="btn btn-primary mr-3" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                            Share
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Modal -->
+            <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="staticBackdropLabel">Share File</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{% url 'share' %}" method="post">
+                            {% csrf_token %}
+                            <div class="modal-body">
+                                <select class="form-select" id="shareOption" name="shareOption" aria-label="Default select example" onchange="toggleEmailInput()">
+                                    <option value="public" selected>Public</option>
+                                    <option value="email">With Email</option>
+                                </select>
+                                <div id="emailInputContainer" class="mt-3 d-none">
+                                    <label for="emailInput" class="form-label">Enter Emails (comma-separated)</label>
+                                    <input type="text" class="form-control" id="emailInput" name="emails" placeholder="example1@mail.com, example2@mail.com">
+                                </div>
+                                <input type="text" name="file_id" id="file_id" value="{{file.id}}" hidden>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-primary">Share</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        {% endfor %}
+    </div>
+
+    <!-- Folder Creation Modal -->
+    <div class="modal fade" id="foldercreate" tabindex="-1" aria-labelledby="folderCreateLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="folderCreateLabel">Create Folder</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3" style="margin: 1rem;">
+                            <label for="folderName" class="form-label">Folder Name</label>
+                            <input type="text" class="form-control" name="folder_name" id="folderName">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" id="addButton" class="btn btn-primary">Add</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Upload Modal -->
+    <div class="modal fade" id="fileupload" tabindex="-1" aria-labelledby="fileUploadLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="fileUploadLabel">Upload File</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3" style="margin: 1rem;">
+                            <label for="fileInput" class="form-label">Choose File</label>
+                            <input type="text" class="form-control" name="file_name" id="fileInput">
+                            <input type="file" class="form-control mt-1" name="file" id="fileInput">
+                            <input type="text" hidden value="{{ folder_id }}" name="folder_id">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Upload</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock body %}
